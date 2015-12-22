@@ -92,8 +92,9 @@ class AvbMarkupHtml extends WireData implements Module {
             } else {
                 $config = $event->arguments[0];
             }
+        } else {
+            $config['page'] = $page;
         }
-        $config['page'] = $page;
 
         $event->return = new AvbMarkupHtml($config);
     }
