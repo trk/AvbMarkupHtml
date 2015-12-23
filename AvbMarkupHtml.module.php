@@ -147,7 +147,7 @@ class MarkupHtml extends WireData {
     }
 
     public function prepend($prepend='') {
-        $this->prepend = $prepend;
+        $this->prepend .= $prepend;
         return $this;
     }
 
@@ -207,7 +207,7 @@ class MarkupHtml extends WireData {
     }
 
     public function child($child='') {
-        $this->child = $child;
+        $this->child .= $child;
         return $this;
     }
 
@@ -217,7 +217,7 @@ class MarkupHtml extends WireData {
     }
 
     public function append($append='') {
-        $this->append = $append;
+        $this->append .= $append;
         return $this;
     }
 

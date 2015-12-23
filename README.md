@@ -75,4 +75,30 @@ $modules->AvbMarkupHtml->html()->tag('div', array('class' => 'container'))->chil
     $page->html('title')->tag('h1', array('class' => 'my-title'))->render(),
     $page->html('body')->tag('div', array('class' => 'my-body'))->render()
 ))->output();
+
+// Example #4 | Multiple child, prepend, append
+$html = $page->html()->tag('div', array('class' => 'uk-container uk-container-center'));
+
+$html->prepend(
+    $page->html()->tag('div')->text('Prepend #1 !')->render()
+);
+$html->prepend(
+    $page->html()->tag('div')->text('Prepend #2 !')->render()
+);
+$html->child(
+    $page->html()->tag('div')->text('Hey !')->render()
+);
+$html->child(
+    $page->html()->tag('div')->text('Foo !')->render()
+);
+$html->child(
+    $page->html()->tag('div')->text('Bar !')->render()
+);
+$html->append(
+    $page->html()->tag('div')->text('Append #1 !')->render()
+);
+$html->append(
+    $page->html()->tag('div')->text('Append #2 !')->render()
+);
+$html->output();
 ```
