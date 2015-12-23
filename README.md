@@ -101,4 +101,58 @@ $html->append(
     $page->html()->tag('div')->text('Append #2 !')->render()
 );
 $html->output();
+
+// Example #5 | Create A HTML page
+// Create Html Tag
+$html = $page->html()->tag('html', array(
+    'lang' => 'en',
+    'dir' => 'ltr'
+));
+
+// Create Head Tag
+$head = $page->html()->tag('head');
+
+// Add TITLE inside HEAD tag
+$head->child(
+    $page->html()->tag('title')->text('My Website')->render()
+);
+// Put HEAD inside HTML Tag
+$html->child($head->render());
+
+// Create BODY Tag
+$body = $page->html()->tag('body', array('class' => $page->template));
+
+// Create DIV Tag
+$container = $page->html()->tag('div', array('class' => 'container'));
+$container->children(array(
+    $page->html()->tag('h1', array('class' => 'h1-title'))->text('H1 Title')->render(),
+    $page->html()->tag('div', array('class' => 'body-content'))->text('Body Content')->render()
+));
+
+// Put DIV.container inside BODY Tag
+$body->child($container->render());
+
+// Put BODY inside HTML Tag
+$html->child($body->render());
+$html->output();
+
+/* OUTPUT
+<html lang='en' dir='ltr'>
+<head>
+    <title>
+         My Website
+    </title>
+</head>
+<body class='homepage'>
+    <div class='container'>
+        <h1 class='h1-title'>
+             H1 Title
+        </h1>
+        <div class='body-content'>
+             Body Content
+        </div>
+    </div>
+</body>
+</html>
+*/
 ```

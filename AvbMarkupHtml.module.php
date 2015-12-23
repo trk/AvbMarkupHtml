@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 3,
+            'version' => 4,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -297,7 +297,11 @@ class MarkupHtml extends WireData {
             else if ($element['closing'])
             {
                 --$indent;
-                $lf = "\n".str_repeat($indentWith, $indent);
+
+                // str_repeat(): Second argument has to be greater than or equal
+                if($indent > $indentWith) $lf = "\n".str_repeat($indentWith, $indent);
+                else $lf = "";
+
                 if (isset($dom[$index - 1]) && $dom[$index - 1]['opening'])
                 {
                     $lf = '';
