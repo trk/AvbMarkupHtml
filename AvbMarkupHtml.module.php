@@ -21,10 +21,44 @@ class AvbMarkupHtml extends WireData implements Module {
             'version' => 1,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
+            'singular' => true,
+            'autoload' => true,
             'href' => 'https://github.com/trk/AvbMarkupHtml',
             'requires' => 'ProcessWire>=2.6.1'
         );
     }
+
+    public function init() {
+        $this->addHook('Page::html', $this, '_html');
+        if(is_null($this->page)) $this->page = wire('page');
+    }
+
+    public function ready(){
+        wire()->wire('html', new MarkupHtml());
+    }
+
+    public function _html($event) {
+        $config = array();
+        $page = $event->object;
+
+        if(!empty($event->arguments[0])) {
+            if(!is_array($event->arguments[0]) && $page->{$event->arguments[0]}) {
+                $config['field'] = $event->arguments[0];
+                $config['field_value'] = $page->{$event->arguments[0]};
+            } else {
+                $config = $event->arguments[0];
+            }
+        } else {
+            $config['page'] = $page;
+        }
+
+        $event->return = new MarkupHtml($config);
+    }
+
+    public function html(array $config = array()) { return new MarkupHtml($config); }
+}
+
+class MarkupHtml extends WireData {
 
     /**
      * Config
@@ -77,28 +111,6 @@ class AvbMarkupHtml extends WireData implements Module {
         return $this;
     }
 
-    public function init() {
-        $this->addHook('Page::html', $this, 'html');
-        if(is_null($this->page)) $this->page = wire('page');
-    }
-
-    public function html($event) {
-        $config = array();
-        $page = $event->object;
-        if(!empty($event->arguments[0])) {
-            if(!is_array($event->arguments[0]) && $page->{$event->arguments[0]}) {
-                $config['field'] = $event->arguments[0];
-                $config['field_value'] = $page->{$event->arguments[0]};
-            } else {
-                $config = $event->arguments[0];
-            }
-        } else {
-            $config['page'] = $page;
-        }
-
-        $event->return = new AvbMarkupHtml($config);
-    }
-
     public function tag($tag=null, $attributes=array()) {
         if(!is_null($tag) && $tag != "") {
             if(strpos($tag, ':/') !== false) {
@@ -137,7 +149,7 @@ class AvbMarkupHtml extends WireData implements Module {
     }
 
     public function prepends($prepends=array()) {
-        if(!empty($prepends)) foreach($prepends as $key => $prepend) $this->prepends .= $prepend;
+        if(!empty($prepends) && is_array($prepends)) $this->prepends = implode('', $prepends);
         return $this;
     }
 
@@ -196,8 +208,8 @@ class AvbMarkupHtml extends WireData implements Module {
         return $this;
     }
 
-    public function children($children=array()) {
-        if(!empty($children)) foreach($children as $key => $child) $this->children .= $child;
+    public function children(array $children = array()) {
+        if(!empty($children) && is_array($children)) $this->children = implode('', $children);
         return $this;
     }
 
@@ -207,7 +219,7 @@ class AvbMarkupHtml extends WireData implements Module {
     }
 
     public function appends($appends=array()) {
-        if(!empty($appends)) foreach($appends as $key => $append) $this->appends .= $append;
+        if(!empty($appends) && is_array($appends)) $this->appends = implode('', $appends);
         return $this;
     }
 
