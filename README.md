@@ -134,7 +134,7 @@ $body->child($container->render());
 
 // Put BODY inside HTML Tag
 $html->child($body->render());
-$html->output();
+$html->output(true); // Pretty HTML output
 
 /* OUTPUT
 <html lang='en' dir='ltr'>
