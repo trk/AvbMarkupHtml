@@ -30,7 +30,6 @@ class AvbMarkupHtml extends WireData implements Module {
 
     public function init() {
         $this->addHook('Page::html', $this, '_html');
-        if(is_null($this->page)) $this->page = wire('page');
     }
 
     public function ready(){
@@ -49,7 +48,7 @@ class AvbMarkupHtml extends WireData implements Module {
                 $config = $event->arguments[0];
             }
         } else {
-            $config['page'] = $page;
+            $config['WirePage'] = $page;
         }
 
         $event->return = new MarkupHtml($config);
@@ -68,9 +67,13 @@ class MarkupHtml extends WireData {
     public $config = array(
         'indent_with' => '    ',
         'tags_without_indentation' => 'link,img,meta',
-        'page' => null,
+        'WirePage' => null,
         'tag' => null,
         'tagSelfClosed' => null,
+        'tagNoClose' => null,
+        'tagCustom' => null,
+        'tagStart' => '',
+        'tagEnd' => '',
         'prepend' => '',
         'prepends' => '',
         'attributes' => '',
@@ -84,7 +87,9 @@ class MarkupHtml extends WireData {
         'fields' => array(),
         'loop' => '',
         'child' => '',
+        'childPosition' => 'bottom',
         'children' => '',
+        'childrenPosition' => 'bottom',
         'append' => '',
         'appends' => ''
     );
@@ -115,10 +120,31 @@ class MarkupHtml extends WireData {
 
     public function tag($tag=null, $attributes=array()) {
         if(!is_null($tag) && $tag != "") {
+            // Self Closed Tag
             if(strpos($tag, ':/') !== false) {
                 $this->tagSelfClosed = true;
                 $tag = str_replace(':/', '', $tag);
             }
+            if(strpos($tag, ':/:') !== false) {
+                $this->tagSelfClosed = true;
+                $tag = str_replace(':/:', '', $tag);
+            }
+            // No Close Tag
+            if(strpos($tag, ':\:') !== false) {
+                $this->tagNoClose = true;
+                $tag = str_replace(':\:', '', $tag);
+            }
+            // Custom Tag
+            if(strpos($tag, '::') !== false) {
+                $this->tagCustom = true;
+                $tags = explode("::", $tag);
+                if(count($tags) == 2) {
+                    $this->tagStart = $tags[0];
+                    $this->tagEnd = $tags[1];
+                }
+                $tag = str_replace('::', '', $tag);
+            }
+
             $this->tag = $tag;
         }
         if(!empty($attributes)) $this->attributes = $this->attributesToString($attributes);
@@ -156,9 +182,10 @@ class MarkupHtml extends WireData {
     }
 
     public function page($page=null) {
-        if(!is_null($page) && $page) $this->page = $page;
-        else $this->page = wire('page');
-        return $this;
+        if(!is_null($page) && $page->id) $this->WirePage = $page;
+        else $this->WirePage = wire('page');
+
+        return $this->WirePage;
     }
 
     public function label($field=null, $page=null) {
@@ -182,7 +209,7 @@ class MarkupHtml extends WireData {
     }
 
     public function field($field=null, $page=null) {
-        if(is_null($page)) $page = $this->page;
+        if(is_null($page)) $page = $this->WirePage;
         if(!is_null($field) && $field!=''&& !is_null($page) && $page->{$field}) {
             $this->field = $field;
             $this->field_value = $page->{$field};
@@ -205,12 +232,14 @@ class MarkupHtml extends WireData {
         return $this;
     }
 
-    public function child($child='') {
+    public function child($child='', $position='bottom') {
+        $this->childPosition = $position;
         $this->child .= $child;
         return $this;
     }
 
-    public function children(array $children = array()) {
+    public function children(array $children = array(), $position='bottom') {
+        $this->childrenPosition = $position;
         if(!empty($children) && is_array($children)) $this->children = implode('', $children);
         return $this;
     }
@@ -228,25 +257,41 @@ class MarkupHtml extends WireData {
     public function render($formatter = false) {
         $output = "";
 
+        // Prepend Elements
         if($this->prepend != '') $output .= $this->prepend;
         if($this->prepends != '') $output .= $this->prepends;
 
+        // Check Tag Options
         if(!is_null($this->tag)) {
-            if(!is_null($this->tagSelfClosed)) $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
-            else $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
+            if(!is_null($this->tagCustom)) {
+                $output .= $this->tagStart;
+            } else {
+                if(!is_null($this->tagSelfClosed)) $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
+                else $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
+            }
         }
+        // Top Child and Children Elements
+        if($this->child != '' && $this->childPosition == 'top') $output .= $this->child;
+        if($this->children != '' && $this->childrenPosition == 'top') $output .= $this->children;
 
+        if($this->label != '') $output .= $this->label;
         if($this->field_value != '') $output .= $this->field_value;
         if($this->text != '') $output .= $this->text;
-        if($this->child != '') $output .= $this->child;
-        if($this->children != '') $output .= $this->children;
-        if($this->label != '') $output .= $this->label;
         if($this->note != '') $output .= $this->note;
 
-        if(!is_null($this->tag) && is_null($this->tagSelfClosed)) $output .= "</$this->tag>";
+        // Bottom Child and Children Elements
+        if($this->child != '' && $this->childPosition == 'bottom') $output .= $this->child;
+        if($this->children != '' && $this->childrenPosition == 'bottom') $output .= $this->children;
 
+        // Check tag close options
+        if(!is_null($this->tagCustom)) $output .= $this->tagEnd;
+        if(!is_null($this->tag) && is_null($this->tagSelfClosed) && is_null($this->tagNoClose) && is_null($this->tagCustom)) $output .= "</$this->tag>";
+
+        // Append Elements
         if($this->append != '') $output .= $this->append;
         if($this->appends != '') $output .= $this->appends;
+
+        // Reset All Settings to Default
         $this->reset();
 
         // Formatter
