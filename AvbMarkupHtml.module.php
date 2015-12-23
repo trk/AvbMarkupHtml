@@ -66,9 +66,8 @@ class MarkupHtml extends WireData {
      * @var array
      */
     public $config = array(
-        'htmlFormatter' => true,
-        'indentWith' => '    ',
-        'tagsWithoutIndentation' => 'html,link,img,meta',
+        'indent_with' => '    ',
+        'tags_without_indentation' => 'html,link,img,meta',
         'page' => null,
         'tag' => null,
         'tagSelfClosed' => null,
@@ -226,15 +225,15 @@ class MarkupHtml extends WireData {
         return $this;
     }
 
-    public function render() {
+    public function render($formatter = false) {
         $output = "";
 
         if($this->prepend != '') $output .= $this->prepend;
         if($this->prepends != '') $output .= $this->prepends;
 
         if(!is_null($this->tag)) {
-            if(!is_null($this->tagSelfClosed)) $output .= "\n<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
-            else $output .= "\n<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
+            if(!is_null($this->tagSelfClosed)) $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
+            else $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
         }
 
         if($this->field_value != '') $output .= $this->field_value;
@@ -244,17 +243,20 @@ class MarkupHtml extends WireData {
         if($this->label != '') $output .= $this->label;
         if($this->note != '') $output .= $this->note;
 
-        if(!is_null($this->tag) && is_null($this->tagSelfClosed)) $output .= "\n</$this->tag>";
+        if(!is_null($this->tag) && is_null($this->tagSelfClosed)) $output .= "</$this->tag>";
 
         if($this->append != '') $output .= $this->append;
         if($this->appends != '') $output .= $this->appends;
         $this->reset();
-        if($this->htmlFormatter === true) $output = "\n" . $this->format($output, $this->indentWith, $this->tagsWithoutIndentation);
+
+        // Formatter
+        if(is_bool($formatter) && $formatter === true) return "\n" . $this->format($output, $this->indent_with, $this->tags_without_indentation);
+
         return $output;
     }
 
-    public function output() {
-        echo $this->render();
+    public function output($formatter = false) {
+        echo $this->render($formatter);
     }
 
     /**
@@ -301,6 +303,7 @@ class MarkupHtml extends WireData {
                 // str_repeat(): Second argument has to be greater than or equal
                 if($indent > $indentWith) $lf = "\n".str_repeat($indentWith, $indent);
                 else $lf = "";
+                // $lf = "\n".str_repeat($indentWith, $indent);
 
                 if (isset($dom[$index - 1]) && $dom[$index - 1]['opening'])
                 {
