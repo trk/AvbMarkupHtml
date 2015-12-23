@@ -67,7 +67,7 @@ class MarkupHtml extends WireData {
      */
     public $config = array(
         'indent_with' => '    ',
-        'tags_without_indentation' => 'html,link,img,meta',
+        'tags_without_indentation' => 'link,img,meta',
         'page' => null,
         'tag' => null,
         'tagSelfClosed' => null,
@@ -301,7 +301,7 @@ class MarkupHtml extends WireData {
                 --$indent;
 
                 // str_repeat(): Second argument has to be greater than or equal
-                if($indent > $indentWith) $lf = "\n".str_repeat($indentWith, $indent);
+                if($indent > $indentWith || $indent == $indentWith) $lf = "\n".str_repeat($indentWith, $indent);
                 else $lf = "";
                 // $lf = "\n".str_repeat($indentWith, $indent);
 
