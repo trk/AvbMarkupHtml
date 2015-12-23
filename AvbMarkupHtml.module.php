@@ -250,7 +250,7 @@ class MarkupHtml extends WireData {
         $this->reset();
 
         // Formatter
-        if(is_bool($formatter) && $formatter === true) return "\n" . $this->format($output, $this->indent_with, $this->tags_without_indentation);
+        if(is_bool($formatter) && $formatter === true) $output = "\n" . $this->format($output, $this->indent_with, $this->tags_without_indentation);
 
         return $output;
     }
