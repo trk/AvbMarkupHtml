@@ -10,6 +10,32 @@ This module allow you to use less HTML elements inside your PHP code !
 #### Added hook for page. For make quick markup calls : $page->html();
 
 ```php
+// All Configs
+$config = array(
+    'htmlFormatter' => true,
+    'indentWith' => '    ',
+    'tagsWithoutIndentation' => 'html,link,img,meta',
+    'page' => null,
+    'tag' => null,
+    'tagSelfClosed' => null,
+    'prepend' => '',
+    'prepends' => '',
+    'attributes' => '',
+    'dataAttributes' => '',
+    'label' => '',
+    'note' => '',
+    'text' => '',
+    'texts' => array(),
+    'field' => '',
+    'field_value' => '',
+    'fields' => array(),
+    'loop' => '',
+    'child' => '',
+    'children' => '',
+    'append' => '',
+    'appends' => ''
+);
+
 // All Methods
 $page->html(array('key', 'value')) // $config
     ->tag('string', array('key', 'value')) // tag name, quick attributes

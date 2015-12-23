@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 2,
+            'version' => 3,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -66,6 +66,9 @@ class MarkupHtml extends WireData {
      * @var array
      */
     public $config = array(
+        'htmlFormatter' => true,
+        'indentWith' => '    ',
+        'tagsWithoutIndentation' => 'html,link,img,meta',
         'page' => null,
         'tag' => null,
         'tagSelfClosed' => null,
@@ -226,30 +229,146 @@ class MarkupHtml extends WireData {
     public function render() {
         $output = "";
 
-        if($this->prepend != '') $output .= "\n\t" . $this->prepend;
-        if($this->prepends != '') $output .= "\n\t" . $this->prepends;
+        if($this->prepend != '') $output .= $this->prepend;
+        if($this->prepends != '') $output .= $this->prepends;
 
         if(!is_null($this->tag)) {
             if(!is_null($this->tagSelfClosed)) $output .= "\n<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
             else $output .= "\n<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
         }
 
-        if($this->field_value != '') $output .= "\n\t" . $this->field_value;
-        if($this->text != '') $output .= "\n\t" . $this->text;
-        if($this->child != '') $output .= "\n\t" . $this->child;
-        if($this->children != '') $output .= "\n\t" . $this->children;
-        if($this->label != '') $output .= "\n\t" . $this->label;
-        if($this->note != '') $output .= "\n\t" . $this->note;
+        if($this->field_value != '') $output .= $this->field_value;
+        if($this->text != '') $output .= $this->text;
+        if($this->child != '') $output .= $this->child;
+        if($this->children != '') $output .= $this->children;
+        if($this->label != '') $output .= $this->label;
+        if($this->note != '') $output .= $this->note;
 
         if(!is_null($this->tag) && is_null($this->tagSelfClosed)) $output .= "\n</$this->tag>";
 
-        if($this->append != '') $output .= "\n\t" . $this->append;
-        if($this->appends != '') $output .= "\n\t" . $this->appends;
+        if($this->append != '') $output .= $this->append;
+        if($this->appends != '') $output .= $this->appends;
         $this->reset();
+        if($this->htmlFormatter === true) $output = "\n" . $this->format($output, $this->indentWith, $this->tagsWithoutIndentation);
         return $output;
     }
 
     public function output() {
         echo $this->render();
+    }
+
+    /**
+     * HTML Formatter
+     * https://github.com/mihaeu/html-formatter
+     * @author Michael Haeuslmann <haeuslmann@gmail.com>
+     */
+
+    /**
+     * Formats HTML by re-indenting the tags and removing unnecessary whitespace.
+     *
+     * @param string $html HTML string.
+     * @param string $indentWith Characters that are being used for indentation (default = 4 spaces).
+     * @param string $tagsWithoutIndentation Comma-separated list of HTML tags that should not be indented (default = html,link,img,meta)
+     * @return string Re-indented HTML.
+     */
+    public static function format($html, $indentWith = '    ', $tagsWithoutIndentation = 'html,link,img,meta')
+    {
+        // remove all line feeds and replace tabs with spaces
+        $html = str_replace(["\n", "\r", "\t"], ['', '', ' '], $html);
+        $elements = preg_split('/(<.+>)/U', $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $dom = self::parseDom($elements);
+        $indent = 0;
+        $output = array();
+        foreach ($dom as $index => $element)
+        {
+            if ($element['opening'])
+            {
+                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+                // make sure that only the elements who have not been blacklisted are being indented
+                if ( ! in_array($element['type'], explode(',', $tagsWithoutIndentation)))
+                {
+                    ++$indent;
+                }
+            }
+            else if ($element['standalone'])
+            {
+                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+            }
+            else if ($element['closing'])
+            {
+                --$indent;
+                $lf = "\n".str_repeat($indentWith, $indent);
+                if (isset($dom[$index - 1]) && $dom[$index - 1]['opening'])
+                {
+                    $lf = '';
+                }
+                $output[] = $lf.trim($element['content']);
+            }
+            else if ($element['text'])
+            {
+                // $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+                $output[] = "\n".str_repeat($indentWith, $indent).preg_replace('/ [ \t]*/', ' ', $element['content']);
+            }
+            else if ($element['comment'])
+            {
+                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+            }
+        }
+        return trim(implode('', $output));
+    }
+    /**
+     * Parses an array of HTML tokens and adds basic information about about the type of
+     * tag the token represents.
+     *
+     * @param Array $elements Array of HTML tokens (tags and text tokens).
+     * @return Array HTML elements with extra information.
+     */
+    public static function parseDom(Array $elements)
+    {
+        $dom = array();
+        foreach ($elements as $element)
+        {
+            $isText = false;
+            $isComment = false;
+            $isClosing = false;
+            $isOpening = false;
+            $isStandalone = false;
+            $currentElement = trim($element);
+            // comment
+            if (strpos($currentElement, '<!') === 0)
+            {
+                $isComment = true;
+            }
+            // closing tag
+            else if (strpos($currentElement, '</') === 0)
+            {
+                $isClosing = true;
+            }
+            // stand-alone tag
+            else if (preg_match('/\/>$/', $currentElement))
+            {
+                $isStandalone = true;
+            }
+            // normal opening tag
+            else if (strpos($currentElement, '<') === 0)
+            {
+                $isOpening = true;
+            }
+            // text
+            else
+            {
+                $isText = true;
+            }
+            $dom[] = array(
+                'text' 				=> $isText,
+                'comment'			=> $isComment,
+                'closing'	 		=> $isClosing,
+                'opening'	 		=> $isOpening,
+                'standalone'	 	=> $isStandalone,
+                'content'			=> $element,
+                'type'				=> preg_replace('/^<\/?(\w+)[ >].*$/U', '$1', $element)
+            );
+        }
+        return $dom;
     }
 }
