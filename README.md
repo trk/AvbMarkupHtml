@@ -7,7 +7,7 @@ This module allow you to use less HTML elements inside your PHP code !
 * [İskender TOTOĞLU](http://altivebir.com)
 
 ### Example
-#### Added hook for page. For making call markup quick : $page->html();
+#### Added hook for page. For make quick markup calls : $page->html();
 
 ```php
 // All Methods
