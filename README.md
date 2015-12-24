@@ -12,12 +12,15 @@ This module allow you to use less HTML elements inside your PHP code !
 ```php
 // All Configs
 $config = array(
-    'htmlFormatter' => true,
-    'indentWith' => '    ',
-    'tagsWithoutIndentation' => 'html,link,img,meta',
-    'page' => null,
+    'indent_with' => '    ',
+    'tags_without_indentation' => 'link,img,meta',
+    'WirePage' => null,
     'tag' => null,
     'tagSelfClosed' => null,
+    'tagNoClose' => null,
+    'tagCustom' => null,
+    'tagStart' => '',
+    'tagEnd' => '',
     'prepend' => '',
     'prepends' => '',
     'attributes' => '',
@@ -26,10 +29,11 @@ $config = array(
     'note' => '',
     'text' => '',
     'texts' => array(),
+    'hasTexts' => false,
     'field' => '',
     'field_value' => '',
     'fields' => array(),
-    'loop' => '',
+    'hasFields' => false,
     'child' => '',
     'children' => '',
     'append' => '',
@@ -45,15 +49,14 @@ $page->html(array('key', 'value')) // $config
     ->prepends(array('values')) // array for values
     ->text('string') // text for inner tag
     ->field('field_name', 'page_object') // Field name and page object
-    ->loop() // !! will work on this !!
-    ->texts(array()) // !! will work on this !!
-    ->fields(array()) // !! Will work on this !!
-    ->note() // !! will work on this !!
-    ->label() // !! Will work on this !!
+    ->texts(array()) // enter text array | array('Text 1', 'Text 2')
+    ->fields(array(), 'page_object') // enter field names as array, a page | array('title', 'body')
+    ->note('field_name', 'page') // enter a field name, a page
+    ->label('field_name', 'page') // enter a field name, a page
     ->append('string') // a string value
     ->appends(array('values')) // array for values
     ->render() // This will return result
-    ->output(); // This will print result
+    ->output(ture|false); // This will print result | default pretty print value is : false
 
 $title = $page->html('title')->tag('h1', array('class'=>'h1-class'))->render();
 echo $title;
