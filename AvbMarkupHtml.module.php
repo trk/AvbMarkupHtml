@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 6,
+            'version' => 7,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -32,9 +32,7 @@ class AvbMarkupHtml extends WireData implements Module {
         $this->addHook('Page::html', $this, '_html');
     }
 
-    public function ready(){
-        wire()->wire('html', $this->html());
-    }
+    // public function ready(){ wire()->wire('html', $this->html()); }
 
     /**
      * For
@@ -66,7 +64,7 @@ class AvbMarkupHtml extends WireData implements Module {
      *
      * @return MarkupHtml
      */
-    public function html() { return new MarkupHtml(); }
+    // public function html() { return new MarkupHtml(); }
 }
 
 /**
@@ -101,9 +99,7 @@ class MarkupHtml {
     protected $fields = array();
     protected $hasFields = false;
     protected $child = '';
-    protected $childPosition = 'bottom';
     protected $children = '';
-    protected $childrenPosition = 'bottom';
     protected $append = '';
     protected $appends = '';
 
@@ -136,9 +132,7 @@ class MarkupHtml {
         'fields' => array(),
         'hasFields' => false,
         'child' => '',
-        'childPosition' => 'bottom',
         'children' => '',
-        'childrenPosition' => 'bottom',
         'append' => '',
         'appends' => ''
     );
@@ -350,7 +344,7 @@ class MarkupHtml {
      * @return $this
      */
     public function field($field=null, $page=null) {
-        if(is_null($page)) $page = $this->WirePage;
+        if(is_null($page)) $page = $this->page($page);
         if(!is_null($field) && $field!='' && !is_null($page) && $page->{$field}) {
             $this->field = $field;
             $this->field_value = $page->{$field};
@@ -407,11 +401,9 @@ class MarkupHtml {
      * Add Child Element
      *
      * @param string $child
-     * @param string $position
      * @return $this
      */
-    public function child($child='', $position='bottom') {
-        $this->childPosition = $position;
+    public function child($child='') {
         $this->child .= $child;
         return $this;
     }
@@ -420,11 +412,9 @@ class MarkupHtml {
      * Add Children Elements
      *
      * @param array $children
-     * @param string $position
      * @return $this
      */
-    public function children(array $children = array(), $position='bottom') {
-        $this->childrenPosition = $position;
+    public function children(array $children = array()) {
         if(!empty($children) && is_array($children)) $this->children = implode('', $children);
         return $this;
     }
