@@ -158,4 +158,20 @@ $html->output(true); // Pretty HTML output
 </body>
 </html>
 */
+
+// Static Call Example
+$article = html::tag('article', array('class' => 'uk-article'))->children(array(
+    html::field('title')->tag('h1', array('class' => 'uk-article-title'))->render(),
+    html::tag('hr:/', array('class' => 'uk-article-divider'))->render(),
+    html::field('body')->render()
+));
+$article->output(true);
+
+/* OUPUT
+<article class='uk-article'>
+    <h1 class='uk-article-title'>Page Title</h1>
+    <hr class='uk-article-divider' />
+    Body Content
+</article>
+*/
 ```
