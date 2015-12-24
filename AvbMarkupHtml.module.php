@@ -33,9 +33,15 @@ class AvbMarkupHtml extends WireData implements Module {
     }
 
     public function ready(){
-        wire()->wire('html', new MarkupHtml());
+        wire()->wire('html', $this->html());
     }
 
+    /**
+     * For
+     * $page->html() api calls
+     *
+     * @param $event
+     */
     public function _html($event) {
         $config = array();
         $page = $event->object;
@@ -54,7 +60,13 @@ class AvbMarkupHtml extends WireData implements Module {
         $event->return = new MarkupHtml($config);
     }
 
-    public function html(array $config = array()) { return new MarkupHtml($config); }
+    /**
+     * For
+     * $html api calls
+     *
+     * @return MarkupHtml
+     */
+    public function html() { return new MarkupHtml(); }
 }
 
 /**
