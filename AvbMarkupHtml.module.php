@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 8,
+            'version' => 9,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -87,6 +87,8 @@ class MarkupHtml {
     protected $tagEnd = '';
     protected $prepend = '';
     protected $prepends = '';
+    protected $classes = array();
+    protected $id = "";
     protected $attributes = '';
     protected $dataAttributes = '';
     protected $label = '';
@@ -145,6 +147,10 @@ class MarkupHtml {
         $this->configure($config);
     }
 
+    public function __call($tag, $args=array()) {
+        return $this->tag($tag, $args);
+    }
+
     /**
      * Overrides configuration settings
      *
@@ -172,45 +178,62 @@ class MarkupHtml {
     /**
      * Setup <tag>
      *
-     * Self Closed = :/ or :/:
-     * No Close = :\:
-     * Custom = ::
+     * Self closed tag = "/>"
+     * Don't close tag = "->"
+     * Custom tag = "=>"
      *
      * @param null $tag
-     * @param array $attributes
+     * @param array $args
      * @return $this
      */
-    public function tag($tag=null, $attributes=array()) {
+    public function tag($tag=null, $args=array()) {
         if(!is_null($tag) && $tag != "") {
-            // Self Closed Tag
-            if(strpos($tag, ':/') !== false) {
-                $this->tagSelfClosed = true;
-                $tag = str_replace(':/', '', $tag);
+            if(isset($args[0]) && is_string($args[0])) {
+                $this->text = $args[0];
             }
-            if(strpos($tag, ':/:') !== false) {
-                $this->tagSelfClosed = true;
-                $tag = str_replace(':/:', '', $tag);
-            }
-            // No Close Tag
-            if(strpos($tag, ':\:') !== false) {
-                $this->tagNoClose = true;
-                $tag = str_replace(':\:', '', $tag);
-            }
-            // Custom Tag
-            if(strpos($tag, '::') !== false) {
-                $this->tagCustom = true;
-                $tags = explode("::", $tag);
-                if(count($tags) == 2) {
-                    $this->tagStart = $tags[0];
-                    $this->tagEnd = $tags[1];
-                }
-                $tag = str_replace('::', '', $tag);
+            if(isset($args[1]) && is_string($args[1])) {
+                if($args[1] == "/>") $this->tagSelfClosed = true;
+                if($args[1] == "->") $this->tagNoClose = true;
+                if($args[1] == "=>") $this->tagCustom = true;
             }
 
             $this->tag = $tag;
         }
-        if(!empty($attributes)) $this->attributes = $this->attributesToString($attributes);
         return $this;
+    }
+
+    /**
+     * Add multiple class='' variables
+     *
+     * @param string $class
+     * @return $this
+     */
+    public function addClass($class="") {
+        if(is_string($class) && $class != "") $this->classes[] = $class;
+        return $this;
+    }
+
+    /**
+     * Add id='' to tag
+     *
+     * @param string $id
+     * @return $this
+     */
+    public function id($id="") {
+        if(is_string($id) && $id != "") $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * Alias with $this->attributes($attributes);
+     *
+     * Set <tag> attributes
+     *
+     * @param array $attributes
+     * @return $this
+     */
+    public function attr($attributes=array()) {
+        return $this->attributes($attributes);
     }
 
     /**
@@ -222,6 +245,18 @@ class MarkupHtml {
     public function attributes($attributes=array()) {
         $this->attributes = $this->attributesToString($attributes);
         return $this;
+    }
+
+    /**
+     * Alias with $this->dataAttributes($dataAttributes);
+     *
+     * Set <tag> data-attributes
+     *
+     * @param array $dataAttributes
+     * @return $this
+     */
+    public function data($dataAttributes=array()) {
+        return $this->dataAttributes($dataAttributes);
     }
 
     /**
@@ -458,8 +493,12 @@ class MarkupHtml {
             if(!is_null($this->tagCustom)) {
                 $output .= $this->tagStart;
             } else {
-                if(!is_null($this->tagSelfClosed)) $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes} />";
-                else $output .= "<{$this->tag}{$this->attributes}{$this->dataAttributes}>";
+                $id = (!empty($this->id)) ? $id = " id='{$this->id}'" : "";
+                $class = (!empty($this->classes)) ? $class = " class='" . implode(' ', $this->classes) . "'" : "";
+                $output .= "<{$this->tag}{$id}{$class}{$this->attributes}{$this->dataAttributes}";
+
+                if(!is_null($this->tagSelfClosed)) $output .= " />";
+                else $output .= ">";
             }
         }
 
@@ -483,6 +522,18 @@ class MarkupHtml {
 
         return $output;
 
+    }
+
+    /**
+     * Alias with $this->render();
+     *
+     * Render | return result
+     *
+     * @param bool|false $formatter
+     * @return string
+     */
+    public function r($formatter = false) {
+        return $this->render($formatter);
     }
 
     /**
@@ -515,6 +566,17 @@ class MarkupHtml {
         $this->reset();
 
         return $output;
+    }
+
+    /**
+     * Alias with $this->output();
+     *
+     * Print Result
+     *
+     * @param bool|false $formatter
+     */
+    public function o($formatter = false) {
+        echo $this->render($formatter);
     }
 
     /**
@@ -681,6 +743,10 @@ class html {
         return self::$MarkupHtml ? self::$MarkupHtml : new MarkupHtml;
     }
 
+    public static function __callStatic($tag, $args=array()) {
+        return self::getMarkupHtml()->tag($tag, $args);
+    }
+
     /**
      * Statically create new custom configured MarkupHtml
      *
@@ -695,16 +761,48 @@ class html {
     /**
      * Setup <tag>
      *
-     * Self Closed = :/ or :/:
-     * No Close = :\:
-     * Custom = ::
+     * Self closed tag = "/>"
+     * Don't close tag = "->"
+     * Custom tag = "=>"
      *
      * @param null $tag
+     * @param array $args
+     * @return $this
+     */
+    public static function tag($tag=null, $args=array()) {
+        return self::getMarkupHtml()->tag($tag, $args);
+    }
+
+    /**
+     * Add multiple class='' variables
+     *
+     * @param string $class
+     * @return $this
+     */
+    public static function addClass($class="") {
+        return self::getMarkupHtml()->addClass($class);
+    }
+
+    /**
+     * Add id='' to tag
+     *
+     * @param string $id
+     * @return $this
+     */
+    public static function id($id="") {
+        return self::getMarkupHtml()->id($id);
+    }
+
+    /**
+     * Alias with $this->attributes($attributes);
+     *
+     * Set <tag> attributes
+     *
      * @param array $attributes
      * @return $this
      */
-    public static function tag($tag=null, $attributes=array()) {
-        return self::getMarkupHtml()->tag($tag, $attributes);
+    public static function attr($attributes=array()) {
+        return self::getMarkupHtml()->attributes($attributes);
     }
 
     /**
@@ -715,6 +813,18 @@ class html {
      */
     public static function attributes($attributes=array()) {
         return self::getMarkupHtml()->attributes($attributes);
+    }
+
+    /**
+     * Alias with $this->dataAttributes($dataAttributes);
+     *
+     * Set <tag> data-attributes
+     *
+     * @param array $dataAttributes
+     * @return $this
+     */
+    public static function data($dataAttributes=array()) {
+        return self::getMarkupHtml()->dataAttributes($dataAttributes);
     }
 
     /**
@@ -866,6 +976,18 @@ class html {
     }
 
     /**
+     * Alias with $this->render();
+     *
+     * Render | return result
+     *
+     * @param bool|false $formatter
+     * @return string
+     */
+    public static function r($formatter = false) {
+        return self::getMarkupHtml()->render($formatter);
+    }
+
+    /**
      * Render | return result
      *
      * @param bool|false $formatter
@@ -873,6 +995,18 @@ class html {
      */
     public static function render($formatter = false) {
         return self::getMarkupHtml()->render($formatter);
+    }
+
+    /**
+     * Alias with $this->output()
+     *
+     * Print Result
+     *
+     * @param bool|false $formatter
+     * @return string
+     */
+    public static function o($formatter = false) {
+        return self::getMarkupHtml()->output($formatter);
     }
 
     /**

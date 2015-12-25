@@ -42,8 +42,12 @@ $config = array(
 
 // All Methods
 $page->html(array('key', 'value')) // $config
-    ->tag('string', array('key', 'value')) // tag name, quick attributes
+    ->tag('string', $args=arra())) // tag name, $args=content,tag-options => "/>" self closed, "->" no close, "=>" special tag
+    ->addClass('string') // Element class name
+    ->id('string') // Element id
+    ->attr(array('key', 'value')) // Alias with ->attributes(); function
     ->attributes(array('key', 'value')) // attributes
+    ->data(array('key', 'value')) // Alias with ->dataAttributes(); function
     ->dataAttributes(array('key', 'value')) // data-attributes, this will add auto data- prefix to your attribute
     ->prepend('string') // a string value
     ->prepends(array('values')) // array for values
@@ -55,8 +59,47 @@ $page->html(array('key', 'value')) // $config
     ->label('field_name', 'page') // enter a field name, a page
     ->append('string') // a string value
     ->appends(array('values')) // array for values
-    ->render() // This will return result
-    ->output(ture|false); // This will print result | default pretty print value is : false
+    ->r(true|false) // Alis with ->render(); function
+    ->render(true|false) // This will return result
+    ->o(true|false) // Alias with ->output(); function
+    ->output(true|false); // This will print result | default pretty print value is : false
+
+html::div("Hey !")
+    ->addClass('container')
+    ->addClass('container-center')
+    ->id('centered-container')
+    ->output(true);
+/* output ::
+<div id='centered-container' class='uk-container uk-container-center'>
+    Hey !
+</div>
+*/
+html::ul()->addClass('list')->children(array(
+	html::li('Li element value 1')->addClass('list-item')->render(),
+	html::li('Li element value 2')->addClass('list-item')->render(),
+	html::li('Li element value 3')->addClass('list-item')->render(),
+	html::li('Li element value 4')->addClass('list-item')->render(),
+	html::li('Li element value 5')->addClass('list-item')->render()
+))->output(true);
+/* output ::
+<ul class='list'>
+    <li class='list-item'>
+        Li element value 1
+    </li>
+    <li class='list-item'>
+        Li element value 2
+    </li>
+    <li class='list-item'>
+        Li element value 3
+    </li>
+    <li class='list-item'>
+        Li element value 4
+    </li>
+    <li class='list-item'>
+        Li element value 5
+    </li>
+</ul>
+*/
 
 $title = $page->html('title')->tag('h1', array('class'=>'h1-class'))->render();
 echo $title;
