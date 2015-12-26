@@ -42,7 +42,7 @@ $config = array(
 
 // All Methods
 $page->html(array('key', 'value')) // $config
-    ->tag('string', $args=arra())) // tag name, $args=content,tag-options => "/>" self closed, "->" no close, "=>" special tag
+    ->tag('string', $args=array())) // tag name, $args=content,tag-options => "/>" self closed, "->" no close, "=>" special tag
     ->addClass('string') // Element class name
     ->id('string') // Element id
     ->attr('key', 'value') // output : key='value'
