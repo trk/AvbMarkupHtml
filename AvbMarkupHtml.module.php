@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 10,
+            'version' => 11,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -77,14 +77,14 @@ class AvbMarkupHtml extends WireData implements Module {
 class MarkupHtml {
 
     protected $indent_with = '    ';
-    protected $tags_without_indentation = 'link,img,meta';
+    protected $tags_without_indentation = 'html,link,img,meta,head';
     protected $WirePage = null;
     protected $tag = null;
-    protected $tagSelfClosed = null;
-    protected $tagNoClose = null;
-    protected $tagCustom = null;
-    protected $tagStart = '';
-    protected $tagEnd = '';
+    protected $tagSelfClosed = false;
+    protected $tagNoClose = false;
+    protected $tagCustom = false;
+    protected $tagStart = null;
+    protected $tagEnd = null;
     protected $prepend = '';
     protected $prepends = '';
     protected $classes = array();
@@ -112,12 +112,12 @@ class MarkupHtml {
      */
     public $config = array(
         'indent_with' => '    ',
-        'tags_without_indentation' => 'link,img,meta',
+        'tags_without_indentation' => 'html,link,img,meta',
         'WirePage' => null,
         'tag' => null,
-        'tagSelfClosed' => null,
-        'tagNoClose' => null,
-        'tagCustom' => null,
+        'tagSelfClosed' => false,
+        'tagNoClose' => false,
+        'tagCustom' => false,
         'tagStart' => '',
         'tagEnd' => '',
         'prepend' => '',
@@ -194,7 +194,16 @@ class MarkupHtml {
             if(isset($args[1]) && is_string($args[1])) {
                 if($args[1] == "/>") $this->tagSelfClosed = true;
                 if($args[1] == "->") $this->tagNoClose = true;
-                if($args[1] == "=>") $this->tagCustom = true;
+                if($args[1] == "=>") {
+                    if(strpos($tag, ',') !== false) {
+                        $tags = explode(",", $tag);
+                        if(isset($tags[0]) && is_string($tags[0])) $this->tagStart = $tags[0];
+                        if(isset($tags[1]) && is_string($tags[1])) $this->tagEnd = $tags[1];
+                    } else {
+                        $this->tagStart = $tag;
+                    }
+                    $this->tagCustom = true;
+                }
             }
 
             $this->tag = $tag;
@@ -490,7 +499,7 @@ class MarkupHtml {
 
         // Open Tag
         if(!is_null($this->tag)) {
-            if(!is_null($this->tagCustom)) {
+            if($this->tagCustom === true && !is_null($this->tagStart)) {
                 $output .= $this->tagStart;
             } else {
                 $id = (!empty($this->id)) ? $id = " id='{$this->id}'" : "";
@@ -499,7 +508,7 @@ class MarkupHtml {
                 $dataAttributes = (!empty($this->dataAttributes)) ? $this->attributesToString($this->dataAttributes, 'data-') : "";
                 $output .= "<{$this->tag}{$id}{$class}{$attributes}{$dataAttributes}";
 
-                if(!is_null($this->tagSelfClosed)) $output .= " />";
+                if($this->tagSelfClosed === true) $output .= " />";
                 else $output .= ">";
             }
         }
@@ -515,8 +524,10 @@ class MarkupHtml {
         if($this->children) $output .= $this->children;
 
         // Close Tag
-        if(!is_null($this->tagCustom)) $output .= $this->tagEnd;
-        if(!is_null($this->tag) && is_null($this->tagSelfClosed) && is_null($this->tagNoClose) && is_null($this->tagCustom)) $output .= "</$this->tag>";
+        if(!is_null($this->tag)) {
+            if($this->tagCustom === true && !is_null($this->tagEnd)) $output .= $this->tagEnd;
+            if($this->tagSelfClosed != true && $this->tagNoClose != true && $this->tagCustom != true) $output .= "</$this->tag>";
+        }
 
         // Append Elements
         if($this->append != '') $output .= $this->append;
@@ -616,9 +627,11 @@ class MarkupHtml {
         $output = array();
         foreach ($dom as $index => $element)
         {
+            $indenter = ($indent >= $indentWith) ? str_repeat($indentWith, $indent) : "";
+
             if ($element['opening'])
             {
-                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+                $output[] = "\n".$indenter.trim($element['content']);
                 // make sure that only the elements who have not been blacklisted are being indented
                 if ( ! in_array($element['type'], explode(',', $tagsWithoutIndentation)))
                 {
@@ -627,17 +640,12 @@ class MarkupHtml {
             }
             else if ($element['standalone'])
             {
-                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+                $output[] = "\n".$indenter.trim($element['content']);
             }
             else if ($element['closing'])
             {
                 --$indent;
-
-                // str_repeat(): Second argument has to be greater than or equal
-                if($indent > $indentWith || $indent == $indentWith) $lf = "\n".str_repeat($indentWith, $indent);
-                else $lf = "";
-                // $lf = "\n".str_repeat($indentWith, $indent);
-
+                $lf = "\n".$indenter;
                 if (isset($dom[$index - 1]) && $dom[$index - 1]['opening'])
                 {
                     $lf = '';
@@ -647,11 +655,11 @@ class MarkupHtml {
             else if ($element['text'])
             {
                 // $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
-                $output[] = "\n".str_repeat($indentWith, $indent).preg_replace('/ [ \t]*/', ' ', $element['content']);
+                $output[] = "\n".$indenter.preg_replace('/ [ \t]*/', ' ', $element['content']);
             }
             else if ($element['comment'])
             {
-                $output[] = "\n".str_repeat($indentWith, $indent).trim($element['content']);
+                $output[] = "\n".$indenter.trim($element['content']);
             }
         }
         return trim(implode('', $output));
