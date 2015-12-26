@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 9,
+            'version' => 10,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -225,15 +225,15 @@ class MarkupHtml {
     }
 
     /**
-     * Alias with $this->attributes($attributes);
+     * Set <tag> attribute
      *
-     * Set <tag> attributes
-     *
-     * @param array $attributes
+     * @param null $key
+     * @param string $value
      * @return $this
      */
-    public function attr($attributes=array()) {
-        return $this->attributes($attributes);
+    public function attr($key=null, $value="") {
+        if(!is_null($key) && is_string($key)) $this->attributes[$key] = $value;
+        return $this;
     }
 
     /**
@@ -243,20 +243,20 @@ class MarkupHtml {
      * @return $this
      */
     public function attributes($attributes=array()) {
-        $this->attributes = $this->attributesToString($attributes);
+        if(!empty($attributes)) $this->attributes = array_merge($this->attributes, $attributes);
         return $this;
     }
 
     /**
-     * Alias with $this->dataAttributes($dataAttributes);
+     *  Set <tag> data-attribute
      *
-     * Set <tag> data-attributes
-     *
-     * @param array $dataAttributes
+     * @param null $key
+     * @param string $value
      * @return $this
      */
-    public function data($dataAttributes=array()) {
-        return $this->dataAttributes($dataAttributes);
+    public function data($key=null, $value="") {
+        if(!is_null($key) && is_string($key)) $this->dataAttributes[$key] = $value;
+        return $this;
     }
 
     /**
@@ -266,7 +266,7 @@ class MarkupHtml {
      * @return $this
      */
     public function dataAttributes($dataAttributes=array()) {
-        $this->dataAttributes = $this->attributesToString($dataAttributes, 'data-');
+        if(!empty($dataAttributes)) $this->dataAttributes = array_merge($this->dataAttributes, $dataAttributes);
         return $this;
     }
 
@@ -412,7 +412,7 @@ class MarkupHtml {
      * @return $this
      */
     public function text($text=null) {
-        if(!is_null($text) && $text!='') $this->text = $text;
+        if(!is_null($text) && is_string($text) && $text!='') $this->text = $text;
         return $this;
     }
 
@@ -495,7 +495,9 @@ class MarkupHtml {
             } else {
                 $id = (!empty($this->id)) ? $id = " id='{$this->id}'" : "";
                 $class = (!empty($this->classes)) ? $class = " class='" . implode(' ', $this->classes) . "'" : "";
-                $output .= "<{$this->tag}{$id}{$class}{$this->attributes}{$this->dataAttributes}";
+                $attributes = (!empty($this->attributes)) ? $this->attributesToString($this->attributes) : "";
+                $dataAttributes = (!empty($this->dataAttributes)) ? $this->attributesToString($this->dataAttributes, 'data-') : "";
+                $output .= "<{$this->tag}{$id}{$class}{$attributes}{$dataAttributes}";
 
                 if(!is_null($this->tagSelfClosed)) $output .= " />";
                 else $output .= ">";
@@ -577,6 +579,7 @@ class MarkupHtml {
      */
     public function o($formatter = false) {
         echo $this->render($formatter);
+        return;
     }
 
     /**
@@ -586,6 +589,7 @@ class MarkupHtml {
      */
     public function output($formatter = false) {
         echo $this->render($formatter);
+        return;
     }
 
     /**
@@ -767,17 +771,17 @@ class html {
      *
      * @param null $tag
      * @param array $args
-     * @return $this
+     * @return MarkupHtml
      */
     public static function tag($tag=null, $args=array()) {
         return self::getMarkupHtml()->tag($tag, $args);
     }
 
     /**
-     * Add multiple class='' variables
+     * Add multiple class='variables'
      *
      * @param string $class
-     * @return $this
+     * @return MarkupHtml
      */
     public static function addClass($class="") {
         return self::getMarkupHtml()->addClass($class);
@@ -787,51 +791,49 @@ class html {
      * Add id='' to tag
      *
      * @param string $id
-     * @return $this
+     * @return MarkupHtml
      */
     public static function id($id="") {
         return self::getMarkupHtml()->id($id);
     }
 
     /**
-     * Alias with $this->attributes($attributes);
+     * Set <tag> attribute
      *
-     * Set <tag> attributes
-     *
-     * @param array $attributes
-     * @return $this
+     * @param null $key
+     * @param string $value
+     * @return MarkupHtml
      */
-    public static function attr($attributes=array()) {
-        return self::getMarkupHtml()->attributes($attributes);
+    public static function attr($key=null, $value="") {
+        return self::getMarkupHtml()->attr($key, $value);
     }
 
     /**
      * Set <tag> attributes
      *
      * @param array $attributes
-     * @return $this
+     * @return MarkupHtml
      */
     public static function attributes($attributes=array()) {
         return self::getMarkupHtml()->attributes($attributes);
     }
 
     /**
-     * Alias with $this->dataAttributes($dataAttributes);
+     * Set <tag> data-attribute
      *
-     * Set <tag> data-attributes
-     *
-     * @param array $dataAttributes
-     * @return $this
+     * @param null $key
+     * @param string $value
+     * @return MarkupHtml
      */
-    public static function data($dataAttributes=array()) {
-        return self::getMarkupHtml()->dataAttributes($dataAttributes);
+    public static function data($key=null, $value="") {
+        return self::getMarkupHtml()->data($key, $value);
     }
 
     /**
      * Set <tag> data-attributes
      *
      * @param array $dataAttributes
-     * @return $this
+     * @return MarkupHtml
      */
     public static function dataAttributes($dataAttributes=array()) {
         return self::getMarkupHtml()->dataAttributes($dataAttributes);
@@ -841,7 +843,7 @@ class html {
      * Add Prepend element
      *
      * @param string $prepend
-     * @return $this
+     * @return MarkupHtml
      */
     public static function prepend($prepend='') {
         return self::getMarkupHtml()->prepend($prepend);
@@ -851,7 +853,7 @@ class html {
      * Add Prepend Elements
      *
      * @param array $prepends
-     * @return $this
+     * @return MarkupHtml
      */
     public static function prepends($prepends=array()) {
         return self::getMarkupHtml()->prepends($prepends);
@@ -876,7 +878,7 @@ class html {
      *
      * @param null $field
      * @param null $page
-     * @return $this
+     * @return MarkupHtml
      */
     public static function label($field=null, $page=null) {
         return self::getMarkupHtml()->label($field, $page);
@@ -887,7 +889,7 @@ class html {
      *
      * @param null $field
      * @param null $page
-     * @return $this
+     * @return MarkupHtml
      */
     public static function note($field=null, $page=null) {
         return self::getMarkupHtml()->note($field, $page);
@@ -898,7 +900,7 @@ class html {
      *
      * @param null $field
      * @param null $page
-     * @return $this
+     * @return MarkupHtml
      */
     public static function field($field=null, $page=null) {
         return self::getMarkupHtml()->field($field, $page);
@@ -909,7 +911,7 @@ class html {
      *
      * @param array $fields
      * @param null $page
-     * @return $this
+     * @return MarkupHtml
      */
     public static function fields($fields=array(), $page=null) {
         return self::getMarkupHtml()->fields($fields, $page);
@@ -919,7 +921,7 @@ class html {
      * Set given text value
      *
      * @param null $text
-     * @return $this
+     * @return MarkupHtml
      */
     public static function text($text=null) {
         return self::getMarkupHtml()->text($text);
@@ -929,7 +931,7 @@ class html {
      * Set given texts values
      *
      * @param array $texts
-     * @return $this
+     * @return MarkupHtml
      */
     public static function texts($texts=array()) {
         return self::getMarkupHtml()->texts($texts);
@@ -939,7 +941,7 @@ class html {
      * Add Child Element
      *
      * @param string $child
-     * @return $this
+     * @return MarkupHtml
      */
     public static function child($child='') {
         return self::getMarkupHtml()->child($child);
@@ -949,7 +951,7 @@ class html {
      * Add Children Elements
      *
      * @param array $children
-     * @return $this
+     * @return MarkupHtml
      */
     public static function children($children = array()) {
         return self::getMarkupHtml()->children($children);
@@ -959,7 +961,7 @@ class html {
      * Add Append Element
      *
      * @param string $append
-     * @return $this
+     * @return MarkupHtml
      */
     public static function append($append='') {
         return self::getMarkupHtml()->append($append);
@@ -969,7 +971,7 @@ class html {
      * Add Appends Elements
      *
      * @param array $appends
-     * @return $this
+     * @return MarkupHtml
      */
     public static function appends($appends=array()) {
         return self::getMarkupHtml()->appends($appends);

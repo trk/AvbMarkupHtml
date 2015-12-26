@@ -45,9 +45,9 @@ $page->html(array('key', 'value')) // $config
     ->tag('string', $args=arra())) // tag name, $args=content,tag-options => "/>" self closed, "->" no close, "=>" special tag
     ->addClass('string') // Element class name
     ->id('string') // Element id
-    ->attr(array('key', 'value')) // Alias with ->attributes(); function
+    ->attr('key', 'value') // output : key='value'
     ->attributes(array('key', 'value')) // attributes
-    ->data(array('key', 'value')) // Alias with ->dataAttributes(); function
+    ->data('key', 'value') // output : data-key='value'
     ->dataAttributes(array('key', 'value')) // data-attributes, this will add auto data- prefix to your attribute
     ->prepend('string') // a string value
     ->prepends(array('values')) // array for values
@@ -64,13 +64,58 @@ $page->html(array('key', 'value')) // $config
     ->o(true|false) // Alias with ->output(); function
     ->output(true|false); // This will print result | default pretty print value is : false
 
+// Working With ProcessWire
+$ul = html::ul()->addClass('list');
+foreach($page->children as $p) {
+	$ul->child(
+		html::li()
+			->addClass('list-item')
+			->data('id', $p->id)
+			->child(
+				html::a($p->title)
+					->addClass('list-item-link')
+					->attr('href', $p->url)
+					->data('id', $p->id)->r()
+			)->r()
+	);
+}
+$ul->o(true);
+/* output :
+<ul class='list'>
+    <li class='list-item' data-id='1057'>
+        <a class='list-item-link' href='/en/villas/' data-id='1057'>
+            Villas
+        </a>
+    </li>
+    <li class='list-item' data-id='1001'>
+        <a class='list-item-link' href='/en/location/' data-id='1001'>
+            Location
+        </a>
+    </li>
+    <li class='list-item' data-id='1090'>
+        <a class='list-item-link' href='/en/guestbook/' data-id='1090'>
+            Guestbook
+        </a>
+    </li>
+    <li class='list-item' data-id='1055'>
+        <a class='list-item-link' href='/en/contact/' data-id='1055'>
+            Contact
+        </a>
+    </li>
+    <li class='list-item' data-id='1005'>
+        <a class='list-item-link' href='/en/site-map/' data-id='1005'>
+            Site Map
+        </a>
+    </li>
+</ul>
+*/
 html::div("Hey !")
     ->addClass('container')
     ->addClass('container-center')
     ->id('centered-container')
     ->output(true);
 /* output ::
-<div id='centered-container' class='uk-container uk-container-center'>
+<div id='centered-container' class='container container-center'>
     Hey !
 </div>
 */
