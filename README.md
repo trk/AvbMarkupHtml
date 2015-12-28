@@ -12,6 +12,7 @@ This module allow you to use less HTML elements inside your PHP code !
 ```php
 // All Configs
 $config = array(
+    'quote' => '"',
     'indent_with' => '    ',
     'tags_without_indentation' => 'link,img,meta',
     'WirePage' => null,
@@ -43,6 +44,7 @@ $config = array(
 // All Methods
 $page->html(array('key', 'value')) // $config
     ->tag('string', $args=array())) // tag name, $args=content,tag-options => "/>" self closed, "->" no close, "=>" special tag
+    ->setQuote('double or single quote') // default is : " 
     ->addClass('string') // Element class name
     ->id('string') // Element id
     ->attr('key', 'value') // output : key='value'

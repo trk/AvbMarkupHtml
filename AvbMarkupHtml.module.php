@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 11,
+            'version' => 12,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -76,6 +76,7 @@ class AvbMarkupHtml extends WireData implements Module {
  */
 class MarkupHtml {
 
+    protected $quote = '"';
     protected $indent_with = '    ';
     protected $tags_without_indentation = 'html,link,img,meta,head';
     protected $WirePage = null;
@@ -111,6 +112,7 @@ class MarkupHtml {
      * @var array
      */
     public $config = array(
+        'quote' => '"',
         'indent_with' => '    ',
         'tags_without_indentation' => 'html,link,img,meta',
         'WirePage' => null,
@@ -212,6 +214,17 @@ class MarkupHtml {
     }
 
     /**
+     * Set Quote type for tag-attributes
+     *
+     * @param string $quote
+     * @return $this
+     */
+    public function setQuote($quote='"') {
+        $this->quote = $quote;
+        return $this;
+    }
+
+    /**
      * Add multiple class='' variables
      *
      * @param string $class
@@ -290,7 +303,7 @@ class MarkupHtml {
         $return = "";
         if(!empty($attributes)) {
             foreach($attributes as $key => $value) {
-                $return .= " {$prefix}{$key}='{$value}'";
+                $return .= " {$prefix}{$key}={$this->quote}{$value}{$this->quote}";
             }
         }
         return $return;
@@ -502,8 +515,8 @@ class MarkupHtml {
             if($this->tagCustom === true && !is_null($this->tagStart)) {
                 $output .= $this->tagStart;
             } else {
-                $id = (!empty($this->id)) ? $id = " id='{$this->id}'" : "";
-                $class = (!empty($this->classes)) ? $class = " class='" . implode(' ', $this->classes) . "'" : "";
+                $id = (!empty($this->id)) ? $id = " id={$this->quote}{$this->id}{$this->quote}" : "";
+                $class = (!empty($this->classes)) ? $class = " class={$this->quote}" . implode(' ', $this->classes) . "{$this->quote}" : "";
                 $attributes = (!empty($this->attributes)) ? $this->attributesToString($this->attributes) : "";
                 $dataAttributes = (!empty($this->dataAttributes)) ? $this->attributesToString($this->dataAttributes, 'data-') : "";
                 $output .= "<{$this->tag}{$id}{$class}{$attributes}{$dataAttributes}";
@@ -783,6 +796,16 @@ class html {
      */
     public static function tag($tag=null, $args=array()) {
         return self::getMarkupHtml()->tag($tag, $args);
+    }
+
+    /**
+     * Set Quote type for tag-attributes
+     *
+     * @param string $quote
+     * @return MarkupHtml
+     */
+    public static function setQuote($quote='"') {
+        return self::getMarkupHtml()->setQuote($quote);
     }
 
     /**
