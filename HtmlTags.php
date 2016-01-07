@@ -80,7 +80,7 @@ class HtmlTags {
      * @return $this
      */
     public static function comment($value='') {
-        return self::getMarkupHtml()->tag("<!--,-->", array($value, "->"));
+        return self::getMarkupHtml()->tag("<!--,-->", array($value, "=>"));
     }
 
     /**
@@ -1274,7 +1274,7 @@ class HtmlTags {
      * @param string $value
      * @return $this
      */
-    public static function __var($value='') {
+    public static function _var($value='') {
         return self::getMarkupHtml()->tag("var", array($value));
     }
 
