@@ -195,7 +195,7 @@ html::h1($page->title)->o();
 
 // #Example 7 : Self Closed Tag
 $modules->AvbMarkupHtml->html()->tag('hr', array(null, '/>'))->output();
-html::hr(null, '/>')->o();
+html::hr()->o();
 
 // #Example 8
 $page->html($page->title)->tag('h1')->addClass('my-h1-class')->output();
