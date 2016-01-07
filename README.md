@@ -305,3 +305,10 @@ $article->output(true);
 </article>
 */
 ```
+
+### Change Logs
+
+**v.0.1.4**
+
+- All Classes separated
+- Html Tags added to static calls for code completion. [HTML Element Reference](http://www.w3schools.com/tags/)
