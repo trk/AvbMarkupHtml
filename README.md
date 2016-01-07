@@ -24,8 +24,8 @@ $config = array(
     'tagEnd' => '',
     'prepend' => '',
     'prepends' => '',
-    'attributes' => '',
-    'dataAttributes' => '',
+    'attributes' => array(),
+    'dataAttributes' => array(),
     'label' => '',
     'note' => '',
     'text' => '',
@@ -66,7 +66,7 @@ $page->html(array('key', 'value')) // $config
     ->o(true|false) // Alias with ->output(); function
     ->output(true|false); // This will print result | default pretty print value is : false
 
-// Working With ProcessWire
+// #Example 1 : Working With ProcessWire
 $ul = html::ul()->addClass('list');
 foreach($page->children as $p) {
 	$ul->child(
@@ -82,6 +82,7 @@ foreach($page->children as $p) {
 	);
 }
 $ul->o(true);
+
 /* output :
 <ul class='list'>
     <li class='list-item' data-id='1057'>
@@ -111,16 +112,51 @@ $ul->o(true);
     </li>
 </ul>
 */
+
+// #Example 2
+html::div()
+	->addClass('container')
+	->addClass('container-center')
+	->attr('style', 'border: 1px solid #000;')
+	->data('id', $page->id)
+	->data('title', $page->title)
+	->child(
+		html::h1($page->title)
+			->addClass('h1-title')
+			->r()
+	)
+	->child(
+		html::div($page->body)
+			->addClass('container-inner')
+			->r()
+	)
+	->o($config->debug);
+
+/* Output
+<div class="container container-center" style="border: 1px solid #000;" data-id="Page id field data will come here" data-title="Page title field data will come here">
+	<h1 class="h1-title">
+		Page title field data will come here
+	</h1>
+	<div class="container-inner">
+		Page body field data will come here
+	</div>
+</div>
+*/
+
+// #Example 3 : 
 html::div("Hey !")
     ->addClass('container')
     ->addClass('container-center')
     ->id('centered-container')
     ->output(true);
-/* output ::
+    
+/* Output
 <div id='centered-container' class='container container-center'>
     Hey !
 </div>
 */
+
+// #Example 4 
 html::ul()->addClass('list')->children(array(
 	html::li('Li element value 1')->addClass('list-item')->render(),
 	html::li('Li element value 2')->addClass('list-item')->render(),
@@ -128,7 +164,8 @@ html::ul()->addClass('list')->children(array(
 	html::li('Li element value 4')->addClass('list-item')->render(),
 	html::li('Li element value 5')->addClass('list-item')->render()
 ))->output(true);
-/* output ::
+
+/* Output
 <ul class='list'>
     <li class='list-item'>
         Li element value 1
@@ -148,29 +185,34 @@ html::ul()->addClass('list')->children(array(
 </ul>
 */
 
-$title = $page->html('title')->tag('h1', array('class'=>'h1-class'))->render();
+// #Example 5 
+$title = $page->html('title')->tag('h1')->addClass('h1-class')->render();
 echo $title;
 
-// This will directly print
-$page->html('title')->tag('h1', array('class'=>'h1-class'))->output();
+// #Example 6 :  This will directly print
+$page->html($page->title)->tag('h1')->addClass('h1-class')->output();
+html::h1($page->title)->o();
 
-// Self Closed Tag
-$modules->AvbMarkupHtml->html()->tag('hr:/')->output();
+// #Example 7 : Self Closed Tag
+$modules->AvbMarkupHtml->html()->tag('hr', array(null, '/>'))->output();
+html::hr(null, '/>')->o();
 
-// Example #1
-$page->html('title')->tag('h1', array('class' => 'my-h1-title'))->output();
+// #Example 8
+$page->html($page->title)->tag('h1')->addClass('my-h1-class')->output();
+html::h1($page->title)->addClass('my-h1-class')->o();
 
-// Example #2
-$page->html('title', $pages->get('/contact/'))->tag('h1', array('class' => 'my-h1-title'))->output();
+// #Example 9
+$page->html('title', $pages->get('/contact/'))->tag('h1')->addClass('my-h1-class')->output();
+html::h1()->addClass('my-h1-class')->field('title', $pages->get('/contact/'))->o();
 
-// Example #3
-$modules->AvbMarkupHtml->html()->tag('div', array('class' => 'container'))->children(array(
-    $page->html('title')->tag('h1', array('class' => 'my-title'))->render(),
-    $page->html('body')->tag('div', array('class' => 'my-body'))->render()
+// #Example 10
+$modules->AvbMarkupHtml->html()->tag('div')->addClass('container')->children(array(
+    $page->html('title')->tag('h1')->addClass('my-title')->render(),
+    $page->html('body')->tag('div')->addClass('my-body')->render()
 ))->output();
 
-// Example #4 | Multiple child, prepend, append
-$html = $page->html()->tag('div', array('class' => 'uk-container uk-container-center'));
+// #Example 11 | Multiple child, prepend, append
+$html = $page->html()->tag('div')->addClass('uk-container')->addClass('uk-container-center');
 
 $html->prepend(
     $page->html()->tag('div')->text('Prepend #1 !')->render()
@@ -195,41 +237,39 @@ $html->append(
 );
 $html->output();
 
-// Example #5 | Create A HTML page
-// Create Html Tag
-$html = $page->html()->tag('html', array(
-    'lang' => 'en',
-    'dir' => 'ltr'
-));
+// #Example 12 | Create A HTML page
+//-> Create Html Tag
+$html = $page->html()->tag('html')->attr('lang', 'en')->attr('dir', 'ltr');
 
-// Create Head Tag
+//-> Create Head Tag
 $head = $page->html()->tag('head');
 
-// Add TITLE inside HEAD tag
+//-> Add TITLE inside HEAD tag
 $head->child(
     $page->html()->tag('title')->text('My Website')->render()
 );
-// Put HEAD inside HTML Tag
+
+//-> Put HEAD inside HTML Tag
 $html->child($head->render());
 
-// Create BODY Tag
-$body = $page->html()->tag('body', array('class' => $page->template));
+//-> Create BODY Tag
+$body = $page->html()->tag('body')->addClass($page->template);
 
-// Create DIV Tag
-$container = $page->html()->tag('div', array('class' => 'container'));
+//-> Create DIV Tag
+$container = $page->html()->tag('div')->addClass('container');
 $container->children(array(
-    $page->html()->tag('h1', array('class' => 'h1-title'))->text('H1 Title')->render(),
-    $page->html()->tag('div', array('class' => 'body-content'))->text('Body Content')->render()
+    $page->html()->tag('h1')->addClass('h1-title')->text('H1 Title')->render(),
+    $page->html()->tag('div')->addClass('body-content')->text('Body Content')->render()
 ));
 
-// Put DIV.container inside BODY Tag
+//-> Put DIV.container inside BODY Tag
 $body->child($container->render());
 
-// Put BODY inside HTML Tag
+//-> Put BODY inside HTML Tag
 $html->child($body->render());
 $html->output(true); // Pretty HTML output
 
-/* OUTPUT
+/* Output
 <html lang='en' dir='ltr'>
 <head>
     <title>
@@ -249,15 +289,15 @@ $html->output(true); // Pretty HTML output
 </html>
 */
 
-// Static Call Example
-$article = html::tag('article', array('class' => 'uk-article'))->children(array(
-    html::field('title')->tag('h1', array('class' => 'uk-article-title'))->render(),
-    html::tag('hr:/', array('class' => 'uk-article-divider'))->render(),
+// #Example 13 Static Call Example
+$article = html::tag('article')->addClass('uk-article')->children(array(
+    html::field('title')->tag('h1')->addClass('uk-article-title')->render(),
+    html::tag('hr', array(null, '/>'))->addClass('uk-article-divider')->render(),
     html::field('body')->render()
 ));
 $article->output(true);
 
-/* OUPUT
+/* Output
 <article class='uk-article'>
     <h1 class='uk-article-title'>Page Title</h1>
     <hr class='uk-article-divider' />

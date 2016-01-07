@@ -18,7 +18,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 12,
+            'version' => 13,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -90,8 +90,8 @@ class MarkupHtml {
     protected $prepends = '';
     protected $classes = array();
     protected $id = "";
-    protected $attributes = '';
-    protected $dataAttributes = '';
+    protected $attributes = array();
+    protected $dataAttributes = array();
     protected $label = '';
     protected $note = '';
     protected $text = '';
@@ -512,13 +512,19 @@ class MarkupHtml {
 
         // Open Tag
         if(!is_null($this->tag)) {
+            $id = (!empty($this->id)) ? $id = " id={$this->quote}{$this->id}{$this->quote}" : "";
+            $class = (!empty($this->classes)) ? $class = " class={$this->quote}" . implode(' ', $this->classes) . "{$this->quote}" : "";
+            $attributes = (!empty($this->attributes)) ? $this->attributesToString($this->attributes) : "";
+            $dataAttributes = (!empty($this->dataAttributes)) ? $this->attributesToString($this->dataAttributes, 'data-') : "";
+
             if($this->tagCustom === true && !is_null($this->tagStart)) {
-                $output .= $this->tagStart;
+                $output .= str_replace(
+                    array('{id}', '{class}', '{attr}', '{data}'),
+                    array($id, $class, $attributes, $dataAttributes),
+                    $this->tagStart
+                );
+                // $output .= $this->tagStart;
             } else {
-                $id = (!empty($this->id)) ? $id = " id={$this->quote}{$this->id}{$this->quote}" : "";
-                $class = (!empty($this->classes)) ? $class = " class={$this->quote}" . implode(' ', $this->classes) . "{$this->quote}" : "";
-                $attributes = (!empty($this->attributes)) ? $this->attributesToString($this->attributes) : "";
-                $dataAttributes = (!empty($this->dataAttributes)) ? $this->attributesToString($this->dataAttributes, 'data-') : "";
                 $output .= "<{$this->tag}{$id}{$class}{$attributes}{$dataAttributes}";
 
                 if($this->tagSelfClosed === true) $output .= " />";
