@@ -22,7 +22,7 @@ class AvbMarkupHtml extends WireData implements Module {
         return array(
             'title' => 'AvbMarkupHtml',
             'summary' => __('Module allow to use less HTML elements inside your PHP code'),
-            'version' => 15,
+            'version' => 16,
             'author' => 'İskender TOTOĞLU | @ukyo(community), @trk (Github), http://altivebir.com',
             'icon' => 'code',
             'singular' => true,
@@ -35,8 +35,6 @@ class AvbMarkupHtml extends WireData implements Module {
     public function init() {
         $this->addHook('Page::html', $this, '_html');
     }
-
-    // public function ready(){ wire()->wire('html', $this->html()); }
 
     /**
      * For
@@ -61,12 +59,4 @@ class AvbMarkupHtml extends WireData implements Module {
 
         $event->return = new MarkupHtml($config);
     }
-
-    /**
-     * For
-     * $html api calls
-     *
-     * @return MarkupHtml
-     */
-    // public function html() { return new MarkupHtml(); }
 }

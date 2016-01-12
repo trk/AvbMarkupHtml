@@ -27,6 +27,7 @@ $config = array(
     'attributes' => array(),
     'dataAttributes' => array(),
     'label' => '',
+    'description' => '',
     'note' => '',
     'text' => '',
     'texts' => array(),
@@ -57,8 +58,9 @@ $page->html(array('key', 'value')) // $config
     ->field('field_name', 'page_object') // Field name and page object
     ->texts(array()) // enter text array | array('Text 1', 'Text 2')
     ->fields(array(), 'page_object') // enter field names as array, a page | array('title', 'body')
-    ->note('field_name', 'page') // enter a field name, a page
-    ->label('field_name', 'page') // enter a field name, a page
+    ->fieldLabel('field_name') // enter a field name for get field label
+    ->fieldNote('field_name') // enter a field name for get field note
+    ->fieldDesc('field_name') // enter a field name for get field description
     ->append('string') // a string value
     ->appends(array('values')) // array for values
     ->r(true|false) // Alis with ->render(); function
@@ -308,7 +310,12 @@ $article->output(true);
 
 ### Change Logs
 
-**v.0.1.4**
+**v.0.1.6**
+
+- label('field_name', $page), note('field_name', $page) functions changed with fieldLabel('field_name'), fieldNote('field_name') functions no need to send page, only field name is enough
+- fieldDesc('field_name') function added for get field description
+
+**v.0.1.5**
 
 - All Classes separated
 - Html Tags added to static calls for code completion. [HTML Element Reference](http://www.w3schools.com/tags/)

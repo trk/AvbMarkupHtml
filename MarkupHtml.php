@@ -30,6 +30,7 @@ class MarkupHtml {
     protected $attributes = array();
     protected $dataAttributes = array();
     protected $label = '';
+    protected $description = '';
     protected $note = '';
     protected $text = '';
     protected $texts = array();
@@ -64,6 +65,7 @@ class MarkupHtml {
         'attributes' => '',
         'dataAttributes' => '',
         'label' => '',
+        'description' => '',
         'note' => '',
         'text' => '',
         'texts' => array(),
@@ -290,12 +292,23 @@ class MarkupHtml {
      * Get given field label value
      *
      * @param null $field
-     * @param null $page
      * @return $this
      */
-    public function label($field=null, $page=null) {
+    public function fieldLabel($field=null) {
         if(is_null($field)) $field = $this->field;
-        $this->label = $this->getLabelOrNotes($field, $page);
+        $this->label = $this->getLabelNotesDescription($field);
+        return $this;
+    }
+
+    /**
+     * Get given field description value
+     *
+     * @param null $field
+     * @return $this
+     */
+    public function fieldDesc($field=null) {
+        if(is_null($field)) $field = $this->field;
+        $this->description = $this->getLabelNotesDescription($field, 'description');
         return $this;
     }
 
@@ -303,12 +316,11 @@ class MarkupHtml {
      * Get given field note value
      *
      * @param null $field
-     * @param null $page
      * @return $this
      */
-    public function note($field=null, $page=null) {
+    public function fieldNote($field=null) {
         if(is_null($field)) $field = $this->field;
-        $this->note = $this->getLabelOrNotes($field, $page, 'notes');
+        $this->note = $this->getLabelNotesDescription($field, 'notes');
         return $this;
     }
 
@@ -316,14 +328,11 @@ class MarkupHtml {
      * Get given field label or note value
      *
      * @param null $key
-     * @param null $page
      * @param string $type
      * @return mixed|string
      */
-    protected function getLabelOrNotes($key=null, $page=null, $type='label') {
-        $page = $this->page($page);
-
-        if(!is_null($key) && $key != "" && !is_null($page) && $page->{$key}) {
+    protected function getLabelNotesDescription($key=null, $type='label') {
+        if(!is_null($key) && $key != "" && wire('fields')->get($key)) {
             $prefix = wire('user')->language->isDefault() ? $type : $type . wire('user')->language->id;
             return wire('fields')->get($key)->get($prefix);
         }
@@ -474,6 +483,7 @@ class MarkupHtml {
         if($this->label != '') $output .= $this->label;
         if($this->field_value != '') $output .= $this->field_value;
         if($this->text != '') $output .= $this->text;
+        if($this->description != '') $output .= $this->description;
         if($this->note != '') $output .= $this->note;
 
         // Child and Children Elements

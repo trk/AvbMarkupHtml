@@ -147,22 +147,30 @@ class html extends HtmlTags {
      * Get given field label value
      *
      * @param null $field
-     * @param null $page
      * @return MarkupHtml
      */
-    public static function label($field=null, $page=null) {
-        return self::getMarkupHtml()->label($field, $page);
+    public static function fieldLabel($field=null) {
+        return self::getMarkupHtml()->fieldLabel($field);
+    }
+
+    /**
+     * Get given field label value
+     *
+     * @param null $field
+     * @return MarkupHtml
+     */
+    public static function fieldDesc($field=null) {
+        return self::getMarkupHtml()->fieldDesc($field);
     }
 
     /**
      * Get given field note value
      *
      * @param null $field
-     * @param null $page
      * @return MarkupHtml
      */
-    public static function note($field=null, $page=null) {
-        return self::getMarkupHtml()->note($field, $page);
+    public static function fieldNote($field=null) {
+        return self::getMarkupHtml()->fieldNote($field);
     }
 
     /**
